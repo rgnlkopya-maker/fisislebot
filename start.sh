@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
-set -e
 
 echo "✅ Starting FISISLE-BOT container..."
 
-# Render sets PORT env var automatically
 export PORT="${PORT:-5000}"
 
-# Graceful shutdown
 cleanup() {
   echo "🧹 Shutting down..."
   pkill -P $$ || true
@@ -18,6 +15,7 @@ echo "🌐 Starting web server on port $PORT..."
 gunicorn -b 0.0.0.0:$PORT web_runner:app --workers 1 --threads 4 --timeout 120 &
 WEB_PID=$!
 
+# Bot ve worker crash edebilir, web server kapanmamalı (Render port için şart)
 echo "🤖 Starting Telegram bot polling..."
 python bot_polling.py &
 BOT_PID=$!
@@ -29,19 +27,28 @@ WORKER_PID=$!
 echo "✅ All processes started."
 echo "   web pid=$WEB_PID, bot pid=$BOT_PID, worker pid=$WORKER_PID"
 
-# Wait forever, but exit if any process dies
+# Render için kritik: web server ayakta kalsın.
+# Bot/worker ölürse logla ama container'ı düşürme.
 while true; do
   if ! kill -0 $WEB_PID 2>/dev/null; then
-    echo "❌ Web server died."
+    echo "❌ Web server died. Exiting container so Render can restart."
     exit 1
   fi
+
   if ! kill -0 $BOT_PID 2>/dev/null; then
-    echo "❌ Telegram bot died."
-    exit 1
+    echo "⚠️ Telegram bot died. (Container will stay up; fix bot logs.)"
+    # botu tekrar başlatmayı istersen:
+    python bot_polling.py &
+    BOT_PID=$!
+    echo "🔁 Telegram bot restarted with pid=$BOT_PID"
   fi
+
   if ! kill -0 $WORKER_PID 2>/dev/null; then
-    echo "❌ Worker died."
-    exit 1
+    echo "⚠️ Worker died. (Container will stay up; fix worker logs.)"
+    python worker_process.py &
+    WORKER_PID=$!
+    echo "🔁 Worker restarted with pid=$WORKER_PID"
   fi
+
   sleep 2
 done

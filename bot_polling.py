@@ -1,16 +1,20 @@
 import os
 import csv
-import requests
 from pathlib import Path
 from datetime import datetime
 
 from dotenv import load_dotenv
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
+
+try:
+    from telegram import Update
+    from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
+except Exception as e:
+    print("❌ python-telegram-bot import failed:", e)
+    raise
 
 from PIL import Image
 
-# HEIC -> JPG dönüşümü opsiyonel (web'de kurulu olmayabilir)
+# HEIC -> JPG dönüşümü opsiyonel
 try:
     import pillow_heif
     HEIC_ENABLED = True
@@ -18,11 +22,12 @@ except Exception:
     pillow_heif = None
     HEIC_ENABLED = False
 
-
 # =========================
 # ENV / CONFIG
 # =========================
-load_dotenv()
+if os.path.exists(".env"):
+    load_dotenv()
+
 
 # Tek standart token key: TELEGRAM_BOT_TOKEN
 BOT_TOKEN = (

@@ -12,7 +12,7 @@ cleanup() {
 trap cleanup SIGINT SIGTERM
 
 echo "🌐 Starting web server on port $PORT..."
-gunicorn -b 0.0.0.0:$PORT web_runner:app --workers 1 --threads 4 --timeout 120 &
+python -m gunicorn -b 0.0.0.0:$PORT web_runner:app --workers 1 --threads 4 --timeout 120 &
 WEB_PID=$!
 
 # Bot ve worker crash edebilir, web server kapanmamalı (Render port için şart)

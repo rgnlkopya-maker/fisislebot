@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-ARG CACHEBUST=1
+ARG CACHEBUST=20260109_2
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

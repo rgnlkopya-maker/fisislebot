@@ -15,11 +15,14 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-ARG CACHEBUST=20260109_2
+# Cache bust: Render eski layer kullanmasın
+ARG CACHEBUST=20260110_1
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Build-time doğrulama: gunicorn gerçekten kuruldu mu?
+RUN python -c "import gunicorn; print('gunicorn OK')"
 
 COPY . .
 

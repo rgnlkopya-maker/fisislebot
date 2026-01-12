@@ -1,6 +1,9 @@
 FROM python:3.11-slim
 
-# System deps: tesseract, poppler, opencv runtime deps + pillow-heif deps
+# Logların anlık akması için
+ENV PYTHONUNBUFFERED=1
+
+# Sistem bağımlılıkları (OCR + PDF text extraction + pillow-heif + opencv runtime)
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
     tesseract-ocr-tur \
@@ -15,24 +18,31 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Cache bust: Render eski layer kullanmasın
-ARG CACHEBUST=20260110_1
+# Render cache kırmak için (her sorun olursa değer artır)
+ARG CACHEBUST=20260112_2
 
+# Requirements önce kopyalanır ki Docker layer cache doğru çalışsın
 COPY requirements.txt .
 
-# Önce gunicorn'u kesin kur (garanti)
-RUN pip install --no-cache-dir gunicorn==21.2.0
+# pip'i güncelle (wheel çözümlemeleri daha stabil olur)
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 
-# Sonra diğer bağımlılıkları kur
+# ✅ Web server için kritik paketleri kesin kur (port açma garantisi)
+RUN pip install --no-cache-dir gunicorn==21.2.0 flask==3.0.2
+
+# ✅ Sonra diğer tüm bağımlılıkları kur
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Build-time doğrulama
-RUN python -c "import gunicorn; print('gunicorn OK')"
-RUN pip freeze | grep gunicorn
 
+# ✅ Doğrulama: Flask ve Gunicorn gerçekten kuruldu mu?
+RUN python -c "import flask; import gunicorn; print('flask+gunicorn OK')"
+RUN pip freeze | grep -E "flask|gunicorn"
 
+# Uygulama kodunu kopyala
 COPY . .
 
+# start.sh çalıştırılabilir olmalı
 RUN chmod +x start.sh
 
+# Container başlangıcı
 CMD ["bash", "start.sh"]

@@ -1,7 +1,11 @@
 import os
 import csv
+import requests
 from pathlib import Path
 from datetime import datetime
+import logging
+logging.basicConfig(level=logging.INFO)
+
 
 from dotenv import load_dotenv
 
@@ -269,6 +273,10 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.effective_chat.id if update.effective_chat else None
+    text = update.message.text if update.message else None
+    logging.info("TG TEXT chat_id=%s text=%s", chat_id, text)
+
     await update.message.reply_text(
         "Bana fiş/fotoğraf (photo) veya dosya (document) gönderirsen indirip kaydederim."
     )

@@ -6,9 +6,15 @@ export PORT="${PORT:-5000}"
 
 cleanup() {
   echo "🧹 Shutting down..."
-  pkill -P $$ || true
+
+  # pkill yok: child pid'leri tek tek kapat
+  if [ -n "${BOT_PID:-}" ]; then kill "$BOT_PID" 2>/dev/null || true; fi
+  if [ -n "${WORKER_PID:-}" ]; then kill "$WORKER_PID" 2>/dev/null || true; fi
+  if [ -n "${WEB_PID:-}" ]; then kill "$WEB_PID" 2>/dev/null || true; fi
+
   exit 0
 }
+
 trap cleanup SIGINT SIGTERM
 
 echo "🌐 Starting web server on port $PORT..."

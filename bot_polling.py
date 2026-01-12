@@ -277,6 +277,9 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text if update.message else None
     logging.info("TG TEXT chat_id=%s text=%s", chat_id, text)
 
+    print(f"TG TEXT PRINT chat_id={chat_id} text={text}")   # <- EKLE
+    logging.warning("TG TEXT LOG chat_id=%s text=%s", chat_id, text)  # info yerine warning
+
     await update.message.reply_text(
         "Bana fiş/fotoğraf (photo) veya dosya (document) gönderirsen indirip kaydederim."
     )

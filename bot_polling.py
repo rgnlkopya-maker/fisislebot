@@ -305,7 +305,7 @@ def main():
     print(f"👉 HEIC -> JPG dönüşüm: {'aktif' if HEIC_ENABLED else 'kapalı'} (KEEP_ORIGINAL_HEIC={KEEP_ORIGINAL_HEIC})")
     print("⛔ Durdurmak için: CTRL + C")
 
-    app.run_polling(drop_pending_updates=True)
+    app.run_polling()
 
 
 if __name__ == "__main__":

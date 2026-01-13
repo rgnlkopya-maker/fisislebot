@@ -130,11 +130,6 @@ def ocr_pdf(pdf_path: Path) -> str:
     return "\n".join(all_text)
 
 
-print("[META] processed_at_iso:", payload.get("processed_at_iso"))
-print("[META] confidence keys:", list((payload.get("confidence") or {}).keys()))
-print("[META] warnings:", len(payload.get("warnings", [])))
-print("[META] fallback:", payload.get("fallback"))
-
 
 def write_json(output_path: Path, payload: dict):
     with open(output_path, "w", encoding="utf-8") as f:
@@ -224,6 +219,11 @@ def process_file(file_path: Path, chat_id: str):
             payload["confidence"] = {}
             payload["warnings"] = []
             payload["fallback"] = {"used": False, "reason": "legacy_parser_output"}
+
+        print("[META] processed_at_iso:", payload.get("processed_at_iso"))
+        print("[META] confidence keys:", list((payload.get("confidence") or {}).keys()))
+        print("[META] warnings:", len(payload.get("warnings", [])))
+        print("[META] fallback:", payload.get("fallback"))
 
         # 4) JSON yaz
         json_name = f"{file_path.stem}.json"

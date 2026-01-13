@@ -130,6 +130,12 @@ def ocr_pdf(pdf_path: Path) -> str:
     return "\n".join(all_text)
 
 
+print("[META] processed_at_iso:", payload.get("processed_at_iso"))
+print("[META] confidence keys:", list((payload.get("confidence") or {}).keys()))
+print("[META] warnings:", len(payload.get("warnings", [])))
+print("[META] fallback:", payload.get("fallback"))
+
+
 def write_json(output_path: Path, payload: dict):
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)

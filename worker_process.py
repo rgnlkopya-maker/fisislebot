@@ -4,7 +4,7 @@ import json
 import time
 import shutil
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 import subprocess
 
 import cv2
@@ -159,6 +159,8 @@ def process_file(file_path: Path, chat_id: str):
         return
 
     started_at = now_str()
+    processed_at_iso = datetime.now(timezone.utc).isoformat()
+
 
     try:
         # 1) OCR/TEXT üret
@@ -191,16 +193,31 @@ def process_file(file_path: Path, chat_id: str):
         payload = {
             "chat_id": chat_id,
             "source_file": str(file_path),
-            "processed_at": started_at,
+            "processed_at": started_at,                 # eski format kalsın (geriye uyum)
+            "processed_at_iso": processed_at_iso,       # yeni: UTC ISO
             "ocr_engine": "tesseract",
             "lang": TESS_LANG,
             "config": TESS_CONFIG,
             "text": text,
         }
 
+
+
         # 3) Parser çalıştır
-        parsed = parse_receipt_fields(text, filename=file_path.name)
-        payload["parsed"] = parsed
+        result = parse_receipt_fields(text, filename=file_path.name)
+
+        # Geriye uyumluluk: parser eski format dönerse normalize et
+        if isinstance(result, dict) and "fields" in result:
+            payload["parsed"] = result.get("fields", {})
+            payload["confidence"] = result.get("confidence", {})
+            payload["warnings"] = result.get("warnings", [])
+            payload["fallback"] = result.get("fallback", {})
+        else:
+            # eski parser çıktısı: direkt parsed'a koy
+            payload["parsed"] = result
+            payload["confidence"] = {}
+            payload["warnings"] = []
+            payload["fallback"] = {"used": False, "reason": "legacy_parser_output"}
 
         # 4) JSON yaz
         json_name = f"{file_path.stem}.json"

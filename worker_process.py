@@ -15,6 +15,9 @@ import pytesseract
 # PDF OCR için (PDF -> image)
 from pdf2image import convert_from_path
 
+print("WORKER_VERSION=2026-01-14-001")
+
+
 
 # =========================
 #  AYARLAR / CONFIG
@@ -220,10 +223,6 @@ def process_file(file_path: Path, chat_id: str):
             payload["warnings"] = []
             payload["fallback"] = {"used": False, "reason": "legacy_parser_output"}
 
-        print("[META] processed_at_iso:", payload.get("processed_at_iso"))
-        print("[META] confidence keys:", list((payload.get("confidence") or {}).keys()))
-        print("[META] warnings:", len(payload.get("warnings", [])))
-        print("[META] fallback:", payload.get("fallback"))
 
         # 4) JSON yaz
         json_name = f"{file_path.stem}.json"

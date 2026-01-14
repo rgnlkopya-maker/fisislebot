@@ -2,6 +2,8 @@
 
 echo "✅ Starting FISISLE-BOT container..."
 
+export PYTHONUNBUFFERED=1
+
 export PORT="${PORT:-5000}"
 
 cleanup() {
@@ -23,11 +25,11 @@ WEB_PID=$!
 
 # Bot ve worker crash edebilir, web server kapanmamalı (Render port için şart)
 echo "🤖 Starting Telegram bot polling..."
-python bot_polling.py &
+python -u bot_polling.py &
 BOT_PID=$!
 
 echo "⚙️ Starting worker process..."
-python worker_process.py &
+python -u worker_process.py &
 WORKER_PID=$!
 
 echo "✅ All processes started."
@@ -44,14 +46,14 @@ while true; do
   if ! kill -0 $BOT_PID 2>/dev/null; then
     echo "⚠️ Telegram bot died. (Container will stay up; fix bot logs.)"
     # botu tekrar başlatmayı istersen:
-    python bot_polling.py &
+    python -u bot_polling.py &
     BOT_PID=$!
     echo "🔁 Telegram bot restarted with pid=$BOT_PID"
   fi
 
   if ! kill -0 $WORKER_PID 2>/dev/null; then
     echo "⚠️ Worker died. (Container will stay up; fix worker logs.)"
-    python worker_process.py &
+    python -u worker_process.py &
     WORKER_PID=$!
     echo "🔁 Worker restarted with pid=$WORKER_PID"
   fi
